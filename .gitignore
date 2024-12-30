@@ -1,0 +1,17 @@
+.bashrc
+.bash_history
+.bash_logout
+.bundle/
+.cache/
+.cargo/
+.config/
+.cpanm/
+.lesshst
+.npm/
+.profile
+.ssh/
+.perl-cpm/
+.rustup/
+.zshrc
+.local
+local
