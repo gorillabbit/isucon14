@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "start": "tsc && node dist/main.js",
+    "build": "tsc --build",
     "dev": "tsx watch src/main.ts"
   },
   "dependencies": {
