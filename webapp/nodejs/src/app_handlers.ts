@@ -165,6 +165,7 @@ type GetAppRidesResponseItem = {
 
 export const appGetRides = async (ctx: Context<Environment>) => {
   const user = ctx.var.user;
+  console.log("user", user);
   await ctx.var.dbConn.beginTransaction();
   const items: GetAppRidesResponseItem[] = [];
   try {
@@ -172,7 +173,7 @@ export const appGetRides = async (ctx: Context<Environment>) => {
       `
       SELECT 
           r.*, 
-          rs.*
+          rs.status
       FROM 
           rides r
       INNER JOIN ride_statuses rs 
