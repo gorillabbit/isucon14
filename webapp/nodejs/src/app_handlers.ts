@@ -174,9 +174,9 @@ export const appGetRides = async (ctx: Context<Environment>) => {
       FROM rides 
       INNER JOIN ride_statuses ON rides.id = ride_statuses.ride_id 
       WHERE user_id = ?
+      GROUP BY rides.id
       ORDER BY rides.created_at DESC,
         ride_statuses.created_at DESC
-      GROUP BY rides.id
       `,
       [user.id],
     );
