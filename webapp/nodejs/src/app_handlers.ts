@@ -203,10 +203,18 @@ export const appGetRides = async (ctx: Context<Environment>) => {
 
       const [[chair]] = await ctx.var.dbConn.query<
         Array<Chair & RowDataPacket>
-      >("SELECT * FROM chairs WHERE id = ?", [ride.chair_id]);
-      const [[owner]] = await ctx.var.dbConn.query<
-        Array<Owner & RowDataPacket>
-      >("SELECT * FROM owners WHERE id = ?", [chair.owner_id]);
+      >(
+        `SELECT 
+          chairs.id as chair_id, 
+          chairs.name as chair_name,
+          chairs.model as chair_model,
+          owners.name as owner_name
+        FROM chairs 
+        INNER JOIN owners ON chairs.owner_id = owners.id 
+        WHERE id = ?
+        `,
+        [ride.chair_id],
+      );
       const item = {
         id: ride.id,
         pickup_coordinate: {
@@ -222,10 +230,10 @@ export const appGetRides = async (ctx: Context<Environment>) => {
         requested_at: ride.created_at.getTime(),
         completed_at: ride.updated_at.getTime(),
         chair: {
-          id: chair.id,
-          name: chair.name,
-          model: chair.model,
-          owner: owner.name,
+          id: chair.chair_id,
+          name: chair.chair_name,
+          model: chair.chair_model,
+          owner: chair.owner_name,
         },
       };
       items.push(item);
