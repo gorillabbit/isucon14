@@ -173,11 +173,17 @@ export const appGetRides = async (ctx: Context<Environment>) => {
       `
       SELECT 
           r.*, 
-          rs.status
+          rs.status,
+          c.id as chair_id,
+          c.name as chair_name,
+          c.model as chair_model,
+          o.name as owner_name
       FROM 
           rides r
       INNER JOIN ride_statuses rs 
           ON r.id = rs.ride_id
+      INNER JOIN chairs c ON r.chair_id = c.id
+      INNER JOIN owners o ON c.owner_id = o.id
       WHERE 
           rs.created_at = (
               SELECT MAX(rs_inner.created_at)
@@ -200,22 +206,6 @@ export const appGetRides = async (ctx: Context<Environment>) => {
         ride.destination_latitude,
         ride.destination_longitude,
       );
-
-      const [[chair]] = await ctx.var.dbConn.query<
-        Array<Chair & RowDataPacket>
-      >(
-        `SELECT 
-          chairs.id as chair_id, 
-          chairs.name as chair_name,
-          chairs.model as chair_model,
-          owners.name as owner_name
-        FROM chairs 
-        INNER JOIN owners ON chairs.owner_id = owners.id 
-        WHERE chairs.id = ?
-        `,
-        [ride.chair_id],
-      );
-      console.log("chair", chair);
       const item = {
         id: ride.id,
         pickup_coordinate: {
@@ -231,10 +221,10 @@ export const appGetRides = async (ctx: Context<Environment>) => {
         requested_at: ride.created_at.getTime(),
         completed_at: ride.updated_at.getTime(),
         chair: {
-          id: chair.chair_id,
-          name: chair.chair_name,
-          model: chair.chair_model,
-          owner: chair.owner_name,
+          id: ride.chair_id,
+          name: ride.chair_name,
+          model: ride.chair_model,
+          owner: ride.owner_name,
         },
       };
       items.push(item);
