@@ -185,15 +185,12 @@ export const appGetRides = async (ctx: Context<Environment>) => {
               WHERE rs_inner.ride_id = r.id
           )
       AND r.user_id = ?
+      AND rs.status != 'COMPLETED'
       ORDER BY r.created_at DESC
       `,
       [user.id],
     );
     for (const ride of rides) {
-      if (ride.status !== "COMPLETED") {
-        continue;
-      }
-
       const fare = await calculateDiscountedFare(
         ctx.var.dbConn,
         user.id,
