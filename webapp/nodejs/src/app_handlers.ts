@@ -211,7 +211,7 @@ export const appGetRides = async (ctx: Context<Environment>) => {
           owners.name as owner_name
         FROM chairs 
         INNER JOIN owners ON chairs.owner_id = owners.id 
-        WHERE id = ?
+        WHERE chairs.id = ?
         `,
         [ride.chair_id],
       );
