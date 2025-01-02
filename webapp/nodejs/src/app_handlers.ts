@@ -215,6 +215,7 @@ export const appGetRides = async (ctx: Context<Environment>) => {
         `,
         [ride.chair_id],
       );
+      console.log("chair", chair);
       const item = {
         id: ride.id,
         pickup_coordinate: {
