@@ -171,28 +171,22 @@ export const appGetRides = async (ctx: Context<Environment>) => {
   try {
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       `
-      WITH RankedStatuses AS (
-    SELECT 
-        r.id,
-        r.user_id,
-        r.created_at AS ride_created_at,
-        rs.status,
-        rs.created_at AS status_created_at,
-        ROW_NUMBER() OVER (
-            PARTITION BY r.id 
-            ORDER BY rs.created_at DESC
-        ) AS row_num
-    FROM rides r
-    INNER JOIN ride_statuses rs 
-        ON r.id = rs.ride_id
-    WHERE r.user_id = ?
+      SELECT 
+          r.*, 
+          rs.status
+      FROM 
+          rides r
+      INNER JOIN ride_statuses rs 
+          ON r.id = rs.ride_id
+      WHERE 
+          rs.created_at = (
+              SELECT MAX(rs_inner.created_at)
+              FROM ride_statuses rs_inner
+              WHERE rs_inner.ride_id = r.id
+          )
+      AND r.user_id = ?
       AND rs.status = 'COMPLETED'
-)
-SELECT *
-FROM RankedStatuses
-WHERE row_num = 1
-ORDER BY ride_created_at DESC;
-
+      ORDER BY r.created_at DESC
       `,
       [user.id],
     );
