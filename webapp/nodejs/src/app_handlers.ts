@@ -98,15 +98,21 @@ export const appPostUsers = async (ctx: Context<Environment>) => {
         return ctx.text("この招待コードは使用できません。", 400);
       }
 
-      // 招待クーポン付与
+      // 招待クーポン付与 & 招待した人にもRewardを付与
       await ctx.var.dbConn.query(
-        "INSERT INTO coupons (user_id, code, discount) VALUES (?, ?, ?)",
-        [userId, `INV_${reqJson.invitation_code}`, 1500],
-      );
-      // 招待した人にもRewardを付与
-      await ctx.var.dbConn.query(
-        "INSERT INTO coupons (user_id, code, discount) VALUES (?, CONCAT(?, '_', FLOOR(UNIX_TIMESTAMP(NOW(3))*1000)), ?)",
-        [inviter[0].id, `RWD_${reqJson.invitation_code}`, 1000],
+        `INSERT INTO coupons (user_id, code, discount) 
+        VALUES 
+        (?, ?, ?), 
+        (?, CONCAT(?, '_', FLOOR(UNIX_TIMESTAMP(NOW(3))*1000)), ?)
+        `,
+        [
+          userId,
+          `INV_${reqJson.invitation_code}`,
+          1500,
+          inviter[0].id,
+          `RWD_${reqJson.invitation_code}`,
+          1000,
+        ],
       );
     }
 
@@ -515,7 +521,14 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
     const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
       Array<RideStatus & RowDataPacket>
     >(
-      "SELECT * FROM ride_statuses WHERE ride_id = ? AND app_sent_at IS NULL ORDER BY created_at ASC LIMIT 1",
+      `
+      SELECT * 
+      FROM ride_statuses 
+      WHERE ride_id = ? 
+      AND app_sent_at IS NULL 
+      ORDER BY created_at ASC 
+      LIMIT 1
+      `,
       [ride.id],
     );
     const status = yetSentRideStatus
