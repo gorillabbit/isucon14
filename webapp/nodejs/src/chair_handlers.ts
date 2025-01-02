@@ -119,8 +119,10 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
       "SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1",
       [chair.id],
     );
+    console.log("newest_ride", ride, chair.id);
     if (!ride) {
-      return ctx.json({ retry_after_ms: 30 }, 200);
+      console.log("no ride");
+      return ctx.json({ retry_after_ms: 1000 }, 200);
     }
 
     const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
@@ -146,6 +148,17 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
     }
 
     await ctx.var.dbConn.commit();
+    console.log(
+      "response",
+      chair.id,
+      ride.id,
+      user.id,
+      ride.pickup_latitude,
+      ride.pickup_longitude,
+      ride.destination_latitude,
+      ride.destination_longitude,
+      status,
+    );
     return ctx.json(
       {
         data: {
@@ -164,7 +177,7 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
           },
           status,
         },
-        retry_after_ms: 30,
+        retry_after_ms: 1000,
       },
       200,
     );
@@ -178,6 +191,8 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
   const rideID = ctx.req.param("ride_id");
   const chair = ctx.var.chair;
   const reqJson = await ctx.req.json<{ status: string }>();
+  console.log("#######################");
+  console.log("ride_id", rideID, "chair_id", chair.id, "reqJson", reqJson);
   await ctx.var.dbConn.beginTransaction();
   try {
     const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(

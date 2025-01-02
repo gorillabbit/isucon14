@@ -236,6 +236,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
   }
   const user = ctx.var.user;
+  console.log("user", user);
   const rideId = ulid();
   await ctx.var.dbConn.beginTransaction();
   try {
@@ -509,7 +510,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
       [user.id],
     );
     if (!ride) {
-      return ctx.json({ retry_after_ms: 30 }, 200);
+      return ctx.json({ retry_after_ms: 1000 }, 200);
     }
     const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
       Array<RideStatus & RowDataPacket>
@@ -547,7 +548,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
         created_at: ride.created_at.getTime(),
         updated_at: ride.updated_at.getTime(),
       },
-      retry_after_ms: 30,
+      retry_after_ms: 1000,
     };
     if (ride.chair_id !== null) {
       const [[chair]] = await ctx.var.dbConn.query<
@@ -571,6 +572,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
         [yetSentRideStatus.id],
       );
     }
+    console.log(response);
 
     await ctx.var.dbConn.commit();
     return ctx.json(response, 200);

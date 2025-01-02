@@ -6,14 +6,16 @@ import { calculateDistance } from "./common.js";
 
 // このAPIをインスタンス内から一定間隔で叩かせることで、椅子とライドをマッチングさせる
 export const internalGetMatching = async (ctx: Context<Environment>) => {
-  const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-    "SELECT * FROM rides WHERE chair_id IS NULL",
-  );
-  if (rides.length < 1) {
-    return ctx.body(null, 204);
-  }
-  const [matched] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
-    `
+  try {
+    const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
+      "SELECT * FROM rides WHERE chair_id IS NULL",
+    );
+    if (rides.length < 1) {
+      console.log("no rides");
+      return ctx.body(null, 204);
+    }
+    const [matched] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
+      `
 WITH latest_locations AS (
     SELECT chair_id, latitude, longitude
     FROM chair_locations
@@ -41,45 +43,51 @@ AND NOT EXISTS (
     WHERE ir.chair_id = c.id
 )
       `,
-  );
-  if (matched.length < 1) {
+    );
+    if (matched.length < 1) {
+      console.log("no matched");
+      return ctx.body(null, 204);
+    }
+    let i = 0;
+    const used_chairs: String[] = [];
+    for (const ride of rides) {
+      let fastest_chiar = { id: "", time: Infinity };
+      for (const match of matched) {
+        if (used_chairs.includes(match.id)) {
+          continue;
+        }
+        const distant_1 = calculateDistance(
+          match.latitude,
+          match.longitude,
+          ride.pickup_latitude,
+          ride.pickup_longitude,
+        );
+        const distant_2 = calculateDistance(
+          ride.destination_latitude,
+          ride.destination_longitude,
+          ride.pickup_latitude,
+          ride.pickup_longitude,
+        );
+        const time = (distant_1 + distant_2) / match.speed;
+        if (fastest_chiar.time > time) {
+          (fastest_chiar.id = match.id), (fastest_chiar.time = time);
+        }
+      }
+      if (fastest_chiar.id) {
+        await ctx.var.dbConn.query(
+          "UPDATE rides SET chair_id = ? WHERE id = ?",
+          [fastest_chiar.id, ride.id],
+        );
+        used_chairs.push(fastest_chiar.id);
+        i++;
+      } else {
+        break;
+      }
+    }
+    console.log(`##### matched ${i} rides #####`);
     return ctx.body(null, 204);
+  } catch (error) {
+    console.log(error);
+    return ctx.text(`Internal Server Error\n${error}`, 500);
   }
-  let i = 0;
-  const used_chairs: String[] = [];
-  for (const ride of rides) {
-    let fastest_chiar = { id: "", time: Infinity };
-    for (const match of matched) {
-      if (used_chairs.includes(match.id)) {
-        continue;
-      }
-      const distant_1 = calculateDistance(
-        match.latitude,
-        match.longitude,
-        ride.pickup_latitude,
-        ride.pickup_longitude,
-      );
-      const distant_2 = calculateDistance(
-        ride.destination_latitude,
-        ride.destination_longitude,
-        ride.pickup_latitude,
-        ride.pickup_longitude,
-      );
-      const time = (distant_1 + distant_2) / match.speed;
-      if (fastest_chiar.time > time) {
-        (fastest_chiar.id = match.id), (fastest_chiar.time = time);
-      }
-    }
-    if (fastest_chiar.id) {
-      await ctx.var.dbConn.query("UPDATE rides SET chair_id = ? WHERE id = ?", [
-        fastest_chiar.id,
-        ride.id,
-      ]);
-      used_chairs.push(fastest_chiar.id);
-      i++;
-    } else {
-      break;
-    }
-  }
-  return ctx.body(null, 204);
 };
