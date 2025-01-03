@@ -96,16 +96,22 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       [chair.id],
     );
     console.log(ride, reqJson, chair.id);
-    if (
-      ride &&
-      reqJson.latitude === ride.pickup_latitude &&
-      reqJson.longitude === ride.pickup_longitude
-    ) {
-      const new_status = ride.status === "ENROUTE" ? "PICKUP" : "ARRIVED";
-      await ctx.var.dbConn.query(
-        "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-        [ulid(), ride.id, new_status],
-      );
+    if (ride) {
+      let new_status = "";
+      if (reqJson.latitude === ride.pickup_latitude &&
+        reqJson.longitude === ride.pickup_longitude) {
+        new_status = "PICKUP";
+      }
+      if (reqJson.latitude === ride.destination_latitude &&
+        reqJson.longitude === ride.destination_longitude) {
+        new_status = "ARRIVED";
+      }
+      if (new_status) {
+        await ctx.var.dbConn.query(
+          "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
+          [ulid(), ride.id, new_status],
+        );
+      }
     }
     await ctx.var.dbConn.commit();
     return ctx.json({ recorded_at: location.created_at.getTime() }, 200);
