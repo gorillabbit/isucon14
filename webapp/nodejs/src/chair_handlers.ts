@@ -93,7 +93,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       ORDER BY r.updated_at DESC
       LIMIT 1
       `,
-      [chair.id, reqJson.latitude, reqJson.longitude],
+      [chair.id],
     );
     if (
       ride &&
