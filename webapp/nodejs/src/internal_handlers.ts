@@ -11,7 +11,6 @@ export const internalGetMatching = async (ctx: Context<Environment>) => {
       "SELECT * FROM rides WHERE chair_id IS NULL",
     );
     if (rides.length < 1) {
-      console.log("no rides");
       return ctx.body(null, 204);
     }
     const [matched] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
@@ -45,7 +44,6 @@ AND NOT EXISTS (
       `,
     );
     if (matched.length < 1) {
-      console.log("no matched");
       return ctx.body(null, 204);
     }
     let i = 0;

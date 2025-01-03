@@ -165,7 +165,6 @@ type GetAppRidesResponseItem = {
 
 export const appGetRides = async (ctx: Context<Environment>) => {
   const user = ctx.var.user;
-  console.log("user", user);
   await ctx.var.dbConn.beginTransaction();
   const items: GetAppRidesResponseItem[] = [];
   try {
@@ -254,7 +253,6 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
   }
   const user = ctx.var.user;
-  console.log("user", user);
   const rideId = ulid();
   await ctx.var.dbConn.beginTransaction();
   try {
@@ -617,7 +615,6 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
         [yetSentRideStatus.id],
       );
     }
-    console.log(response);
 
     await ctx.var.dbConn.commit();
     return ctx.json(response, 200);
