@@ -286,17 +286,21 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       return ctx.text("ride already exists", 409);
     }
     await ctx.var.dbConn.query(
-      `INSERT INTO rides (id, user_id, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude) VALUES (?, ?, ?, ?, ?, ?);
-      INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?);
+      `INSERT INTO rides (id, user_id, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude) VALUES (?, ?, ?, ?, ?, ?)
       `,
       [
-        rideId, // rides
+        rideId,
         user.id,
         reqJson.pickup_coordinate.latitude,
         reqJson.pickup_coordinate.longitude,
         reqJson.destination_coordinate.latitude,
         reqJson.destination_coordinate.longitude,
-        ulid(), // ride_statuses
+      ],
+    );
+    await ctx.var.dbConn.query(
+      `INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)`,
+      [
+        ulid(),
         rideId,
         "MATCHING",
       ],
