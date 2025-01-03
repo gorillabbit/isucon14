@@ -259,19 +259,20 @@ export const appPostRides = async (ctx: Context<Environment>) => {
   await ctx.var.dbConn.beginTransaction();
   try {
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-      `   SELECT 
-          r.*, 
-          rs.status,
+      `
+      SELECT 
+        r.*, 
+        rs.status
       FROM 
-          rides r
+        rides r
       INNER JOIN ride_statuses rs 
-          ON r.id = rs.ride_id
+        ON r.id = rs.ride_id
       WHERE 
-          rs.created_at = (
-              SELECT MAX(rs_inner.created_at)
-              FROM ride_statuses rs_inner
-              WHERE rs_inner.ride_id = r.id
-          )
+        rs.created_at = (
+          SELECT MAX(rs_inner.created_at)
+          FROM ride_statuses rs_inner
+          WHERE rs_inner.ride_id = r.id
+        )
       AND r.user_id = ?`,
       [user.id],
     );
