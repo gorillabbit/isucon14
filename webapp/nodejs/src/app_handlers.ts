@@ -308,7 +308,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       Array<Coupon & RowDataPacket>
     >("SELECT code FROM coupons WHERE user_id = ? AND used_by IS NULL ORDER BY created_at FOR UPDATE", [user.id]);
     if (rideCount === 1) {
-      console.log("allCoupons", allCoupons);
+      console.log("allCoupons:", allCoupons);
       if (allCoupons.find((coupon) => coupon.code === "CP_NEW2024")) {
         await ctx.var.dbConn.query(
           "UPDATE coupons SET used_by = ? WHERE user_id = ? AND code = 'CP_NEW2024'",
