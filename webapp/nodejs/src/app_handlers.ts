@@ -304,52 +304,27 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       ],
     );
     const rideCount = rides.length;
+    const [allCoupons] = await ctx.var.dbConn.query<
+      Array<Coupon & RowDataPacket>
+    >("SELECT code FROM coupons WHERE user_id = ? AND used_by IS NULL ORDER BY created_at FOR UPDATE", [user.id]);
     if (rideCount === 1) {
-      const [allCoupons] = await ctx.var.dbConn.query<
-        Array<Coupon & RowDataPacket>
-      >("SELECT code FROM coupons WHERE user_id = ? AND used_by IS NULL", [user.id]);
       console.log("allCoupons", allCoupons);
-      // 初回利用で、初回利用クーポンがあれば必ず使う
-      const [[coupon]] = await ctx.var.dbConn.query<
-        Array<Coupon & RowDataPacket>
-      >(
-        "SELECT * FROM coupons WHERE user_id = ? AND code = 'CP_NEW2024' AND used_by IS NULL FOR UPDATE",
-        [user.id],
-      );
-
-      if (!coupon) {
-        // 無ければ他のクーポンを付与された順番に使う
-        const [[coupon]] = await ctx.var.dbConn.query<
-          Array<Coupon & RowDataPacket>
-        >(
-          "SELECT * FROM coupons WHERE user_id = ? AND used_by IS NULL ORDER BY created_at LIMIT 1 FOR UPDATE",
-          [user.id],
-        );
-
-        if (coupon) {
-          await ctx.var.dbConn.query(
-            "UPDATE coupons SET used_by = ? WHERE user_id = ? AND code = ?",
-            [rideId, user.id, coupon.code],
-          );
-        }
-      } else {
+      if (allCoupons.find((coupon) => coupon.code === "CP_NEW2024")) {
         await ctx.var.dbConn.query(
           "UPDATE coupons SET used_by = ? WHERE user_id = ? AND code = 'CP_NEW2024'",
           [rideId, user.id],
         );
-      }
-    } else {
-      // 他のクーポンを付与された順番に使う
-      const [[coupon]] = await ctx.var.dbConn.query<
-        Array<Coupon & RowDataPacket>
-      >(
-        "SELECT * FROM coupons WHERE user_id = ? AND used_by IS NULL ORDER BY created_at LIMIT 1 FOR UPDATE",
-        [user.id],
-      );
-      if (coupon) {
+      } else if (allCoupons.length > 0) {
         await ctx.var.dbConn.query(
           "UPDATE coupons SET used_by = ? WHERE user_id = ? AND code = ?",
-          [rideId, user.id, coupon.code],
+          [rideId, user.id, allCoupons[0].code],
+        );
+      }
+    } else {
+      if (allCoupons.length > 0) {
+        await ctx.var.dbConn.query(
+          "UPDATE coupons SET used_by = ? WHERE user_id = ? AND code = ?",
+          [rideId, user.id, allCoupons[0].code],
         );
       }
     }
