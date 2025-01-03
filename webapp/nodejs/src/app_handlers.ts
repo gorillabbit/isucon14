@@ -3,7 +3,6 @@ import type { Context } from "hono";
 import type { Environment } from "./types/hono.js";
 import { secureRandomStr } from "./utils/random.js";
 import type {
-  ResultSetHeader,
   RowDataPacket,
   Connection,
 } from "mysql2/promise";
@@ -12,7 +11,6 @@ import type {
   Chair,
   Coordinate,
   Coupon,
-  Owner,
   Ride,
   RideStatus,
   User,

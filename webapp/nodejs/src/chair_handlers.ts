@@ -74,33 +74,37 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       Array<ChairLocation & RowDataPacket>
     >("SELECT * FROM chair_locations WHERE id = ?", [chairLocationID]);
     const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-      "SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1",
-      [chair.id],
+      `
+      SELECT 
+        r.*, 
+        rs.status
+      FROM 
+        rides r
+      INNER JOIN ride_statuses rs 
+        ON r.id = rs.ride_id
+      WHERE 
+        rs.created_at = (
+          SELECT MAX(rs_inner.created_at)
+          FROM ride_statuses rs_inner
+          WHERE rs_inner.ride_id = r.id
+        )
+      AND r.chair_id = ?
+      AND rs.status IN ('ENROUTE', 'CARRYING')
+      ORDER BY r.updated_at DESC
+      LIMIT 1
+      `,
+      [chair.id, reqJson.latitude, reqJson.longitude],
     );
-    if (ride) {
-      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
-      if (status !== "COMPLETED" && status !== "CANCELED") {
-        if (
-          reqJson.latitude === ride.pickup_latitude &&
-          reqJson.longitude === ride.pickup_longitude &&
-          status === "ENROUTE"
-        ) {
-          await ctx.var.dbConn.query(
-            "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-            [ulid(), ride.id, "PICKUP"],
-          );
-        }
-        if (
-          reqJson.latitude === ride.destination_latitude &&
-          reqJson.longitude === ride.destination_longitude &&
-          status === "CARRYING"
-        ) {
-          await ctx.var.dbConn.query(
-            "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-            [ulid(), ride.id, "ARRIVED"],
-          );
-        }
-      }
+    if (
+      ride &&
+      reqJson.latitude === ride.pickup_latitude &&
+      reqJson.longitude === ride.pickup_longitude
+    ) {
+      const new_status = ride.status === "ENROUTE" ? "PICKUP" : "ARRIVED";
+      await ctx.var.dbConn.query(
+        "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
+        [ulid(), ride.id, new_status],
+      );
     }
     await ctx.var.dbConn.commit();
     return ctx.json({ recorded_at: location.created_at.getTime() }, 200);
