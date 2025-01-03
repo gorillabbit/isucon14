@@ -259,13 +259,32 @@ export const appPostRides = async (ctx: Context<Environment>) => {
   await ctx.var.dbConn.beginTransaction();
   try {
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-      "SELECT * FROM rides WHERE user_id = ?",
+      `   SELECT 
+          r.*, 
+          rs.status,
+          c.id as chair_id,
+          c.name as chair_name,
+          c.model as chair_model,
+          o.name as owner_name
+      FROM 
+          rides r
+      INNER JOIN ride_statuses rs 
+          ON r.id = rs.ride_id
+      INNER JOIN chairs c ON r.chair_id = c.id
+      INNER JOIN owners o ON c.owner_id = o.id
+      WHERE 
+          rs.created_at = (
+              SELECT MAX(rs_inner.created_at)
+              FROM ride_statuses rs_inner
+              WHERE rs_inner.ride_id = r.id
+          )
+      AND r.user_id = ?
+      ORDER BY r.created_at DESC`,
       [user.id],
     );
     let continuingRideCount = 0;
     for (const ride of rides) {
-      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
-      if (status !== "COMPLETED") {
+      if (ride.status !== "COMPLETED") {
         continuingRideCount++;
       }
     }
