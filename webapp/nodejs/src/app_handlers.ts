@@ -262,24 +262,17 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       `   SELECT 
           r.*, 
           rs.status,
-          c.id as chair_id,
-          c.name as chair_name,
-          c.model as chair_model,
-          o.name as owner_name
       FROM 
           rides r
       INNER JOIN ride_statuses rs 
           ON r.id = rs.ride_id
-      INNER JOIN chairs c ON r.chair_id = c.id
-      INNER JOIN owners o ON c.owner_id = o.id
       WHERE 
           rs.created_at = (
               SELECT MAX(rs_inner.created_at)
               FROM ride_statuses rs_inner
               WHERE rs_inner.ride_id = r.id
           )
-      AND r.user_id = ?
-      ORDER BY r.created_at DESC`,
+      AND r.user_id = ?`,
       [user.id],
     );
     let continuingRideCount = 0;
