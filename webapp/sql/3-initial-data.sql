@@ -88,7 +88,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `rides` WRITE;
 /*!40000 ALTER TABLE `rides` DISABLE KEYS */;
-LOAD DATA LOCAL INFILE '~/isucon14/webapp/sql/rides_new.csv'
+LOAD DATA LOCAL INFILE '~/webapp/sql/rides_new.csv'
 INTO TABLE rides
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"' 
