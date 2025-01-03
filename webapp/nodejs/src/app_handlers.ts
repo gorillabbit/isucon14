@@ -273,10 +273,6 @@ export const appPostRides = async (ctx: Context<Environment>) => {
         reqJson.destination_coordinate.longitude,
       ],
     );
-    await ctx.var.dbConn.query(
-      `INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)`,
-      [ulid(), rideId, "MATCHING",],
-    );
     await updateLatestRideStatus(ctx, "MATCHING", rideId);
     const rideCount = rides.length;
     const [allCoupons] = await ctx.var.dbConn.query<
@@ -406,10 +402,6 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     await ctx.var.dbConn.query(
       "UPDATE rides SET evaluation = ? WHERE id = ?",
       [reqJson.evaluation, rideId],
-    );
-    await ctx.var.dbConn.query(
-      "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-      [ulid(), rideId, "COMPLETED"],
     );
     await updateLatestRideStatus(ctx, "COMPLETED", rideId);
 

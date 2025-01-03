@@ -99,10 +99,6 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
         new_status = "ARRIVED";
       }
       if (new_status) {
-        await ctx.var.dbConn.query(
-          "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-          [ulid(), ride.id, new_status],
-        );
         await updateLatestRideStatus(ctx, new_status, ride.id);
       }
     }
@@ -197,10 +193,6 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
     switch (reqJson.status) {
       // Acknowledge the ride
       case "ENROUTE":
-        await ctx.var.dbConn.query(
-          "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-          [ulid(), ride.id, "ENROUTE"],
-        );
         await updateLatestRideStatus(ctx, "ENROUTE", ride.id);
         break;
       // After Picking up user
@@ -208,10 +200,6 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
         if (ride.latest_status !== "PICKUP") {
           return ctx.text("chair has not arrived yet", 400);
         }
-        await ctx.var.dbConn.query(
-          "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-          [ulid(), ride.id, "CARRYING"],
-        );
         await updateLatestRideStatus(ctx, "CARRYING", ride.id);
         break;
       }
