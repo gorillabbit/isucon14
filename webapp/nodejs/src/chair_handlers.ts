@@ -95,6 +95,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       `,
       [chair.id],
     );
+    console.log(ride, reqJson);
     if (
       ride &&
       reqJson.latitude === ride.pickup_latitude &&
