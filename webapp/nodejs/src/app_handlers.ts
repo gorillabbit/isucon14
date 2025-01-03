@@ -178,7 +178,6 @@ export const appGetRides = async (ctx: Context<Environment>) => {
           rides r
       INNER JOIN chairs c ON r.chair_id = c.id
       INNER JOIN owners o ON c.owner_id = o.id
-
       WHERE r.user_id = ?
       AND r.latest_status = 'COMPLETED'
       ORDER BY r.created_at DESC
@@ -248,25 +247,14 @@ export const appPostRides = async (ctx: Context<Environment>) => {
   try {
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       `
-      SELECT 
-        r.*, 
-        rs.status
-      FROM 
-        rides r
-      INNER JOIN ride_statuses rs 
-        ON r.id = rs.ride_id
-      WHERE 
-        rs.created_at = (
-          SELECT MAX(rs_inner.created_at)
-          FROM ride_statuses rs_inner
-          WHERE rs_inner.ride_id = r.id
-        )
-      AND r.user_id = ?`,
+      SELECT r.*,
+      FROM rides r
+      WHERE r.user_id = ?`,
       [user.id],
     );
     let continuingRideCount = 0;
     for (const ride of rides) {
-      if (ride.status !== "COMPLETED") {
+      if (ride.latest_status !== "COMPLETED") {
         continuingRideCount++;
       }
     }
