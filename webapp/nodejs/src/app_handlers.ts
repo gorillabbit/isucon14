@@ -472,6 +472,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       },
     );
     if (err instanceof ErroredUpstream) {
+      console.error(err);
       return ctx.text(`${err}`, 502);
     }
     await ctx.var.dbConn.commit();
