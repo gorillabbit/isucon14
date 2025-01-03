@@ -88,13 +88,13 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       let new_status = "";
       if (reqJson.latitude === ride.pickup_latitude &&
         reqJson.longitude === ride.pickup_longitude &&
-        ride.status === "ENROUTE"
+        ride.latest_status === "ENROUTE"
       ) {
         new_status = "PICKUP";
       }
       if (reqJson.latitude === ride.destination_latitude &&
         reqJson.longitude === ride.destination_longitude &&
-        ride.status === "CARRYING"
+        ride.latest_status === "CARRYING"
       ) {
         new_status = "ARRIVED";
       }
