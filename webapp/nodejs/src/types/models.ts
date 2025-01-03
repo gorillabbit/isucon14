@@ -50,6 +50,7 @@ export type Ride = {
   evaluation: number | null;
   created_at: Date;
   updated_at: Date;
+  latest_status: string;
 };
 
 export type RideStatus = {
