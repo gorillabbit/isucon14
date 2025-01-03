@@ -75,21 +75,10 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
     >("SELECT * FROM chair_locations WHERE id = ?", [chairLocationID]);
     const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       `
-      SELECT 
-        r.*, 
-        rs.status
-      FROM 
-        rides r
-      INNER JOIN ride_statuses rs 
-        ON r.id = rs.ride_id
-      WHERE 
-        rs.created_at = (
-          SELECT MAX(rs_inner.created_at)
-          FROM ride_statuses rs_inner
-          WHERE rs_inner.ride_id = r.id
-        )
-      AND r.chair_id = ?
-      AND rs.status IN ('ENROUTE', 'CARRYING')
+      SELECT r.*
+      FROM rides r
+      WHERE r.chair_id = ?
+      AND r.latest_status IN ('ENROUTE', 'CARRYING')
       ORDER BY r.updated_at DESC
       LIMIT 1
       `,
@@ -216,8 +205,7 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
         break;
       // After Picking up user
       case "CARRYING": {
-        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
-        if (status !== "PICKUP") {
+        if (ride.latest_status !== "PICKUP") {
           return ctx.text("chair has not arrived yet", 400);
         }
         await ctx.var.dbConn.query(
