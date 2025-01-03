@@ -32,6 +32,9 @@ CREATE TABLE chairs
   access_token VARCHAR(255) NOT NULL COMMENT 'アクセストークン',
   created_at   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '登録日時',
   updated_at   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新日時',
+  latitude   INTEGER     NULL COMMENT '経度',
+  longitude  INTEGER     NULL COMMENT '緯度',
+  total_distance INTEGER default 0 COMMENT '総移動距離',
   PRIMARY KEY (id)
 )
   COMMENT = '椅子情報テーブル';

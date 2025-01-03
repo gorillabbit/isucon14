@@ -1,53 +1,3 @@
--- 設定
-PRAGMA enable_object_cache;
-
--- データベースの作成（DuckDBでは暗黙的に使用されるため、USE文は不要）
--- CHARACTER SETやCOLLATIONの設定は不要です
-
--- テーブルの削除
-DROP TABLE IF EXISTS rides;
-DROP TABLE IF EXISTS ride_statuses;
-
--- ridesテーブルの作成
-CREATE TABLE rides (
-  id                    VARCHAR NOT NULL,
-  user_id               VARCHAR NOT NULL,
-  chair_id              VARCHAR NULL,
-  pickup_latitude       INTEGER NOT NULL,
-  pickup_longitude      INTEGER NOT NULL,
-  destination_latitude  INTEGER NOT NULL,
-  destination_longitude INTEGER NOT NULL,
-  evaluation            INTEGER NULL,
-  created_at            TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at            TIMESTAMP NOT NULL DEFAULT NOW(),
-  latest_status         VARCHAR NULL, -- ENUMの代わりにVARCHARを使用
-  PRIMARY KEY (id)
-);
-
--- インデックスの作成
-CREATE INDEX idx_user_created ON rides (user_id, created_at);
-CREATE INDEX idx_chair_updated ON rides (chair_id, updated_at);
-
--- コメントはDuckDBでは直接DDLに記述不可ですが、メタデータ管理を考慮する場合は以下で代用
--- COMMENT: 'ライド情報テーブル'
-
--- ride_statusesテーブルの作成
-CREATE TABLE ride_statuses (
-  id              VARCHAR NOT NULL,
-  ride_id         VARCHAR NOT NULL,
-  status          VARCHAR NOT NULL, -- ENUMの代わりにVARCHARを使用
-  created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
-  app_sent_at     TIMESTAMP NULL,
-  chair_sent_at   TIMESTAMP NULL,
-  PRIMARY KEY (id)
-);
-
--- インデックスの作成
-CREATE INDEX idx_ride_created_status ON ride_statuses (ride_id, created_at, status);
-CREATE INDEX idx_ride_created ON ride_statuses (ride_id, created_at);
-
-
-
 COPY (
 WITH LatestStatus AS (
     SELECT
@@ -75,3 +25,58 @@ status AS latest_status
 FROM LatestStatus
 ) TO './webapp/sql/rides_new.csv'
 ;
+
+CREATE TABLE chairs AS
+    SELECT * FROM read_csv('./webapp/sql/chairs.csv');
+CREATE TABLE chair_locations AS
+    SELECT * FROM read_csv('./webapp/sql/chair_locations.csv');
+CREATE TABLE chairs_total AS
+    SELECT * FROM read_csv('./webapp/sql/chairs_total.csv');
+
+COPY (
+WITH DiffCalculation AS (
+    SELECT
+        chair_id,
+        latitude,
+        longitude,
+        LAG(latitude) OVER (PARTITION BY chair_id ORDER BY created_at) AS prev_latitude,
+        LAG(longitude) OVER (PARTITION BY chair_id ORDER BY created_at) AS prev_longitude
+    FROM
+        read_csv_auto('./webapp/sql/chair_locations.csv')
+),
+CalculatedSums AS (
+    SELECT
+        chair_id,
+        SUM(ABS(latitude - prev_latitude) + ABS(longitude - prev_longitude)) AS total_diff
+    FROM
+        DiffCalculation
+    WHERE
+        prev_latitude IS NOT NULL -- 最初の行には差分がないため除外
+    GROUP BY
+        chair_id
+)
+SELECT * FROM CalculatedSums
+) TO './webapp/sql/chairs_total.csv';
+
+COPY (
+SELECT 
+    chairs.id,
+    chairs.owner_id,
+    chairs.name,
+    chairs.model,
+    chairs.is_active,
+    chairs.access_token,
+    chairs.created_at,
+    chairs.updated_at,
+    chair_locations.latitude,
+    chair_locations.longitude
+FROM chair_locations
+JOIN chairs ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
+JOIN chairs_total ON chairs_total.chair_id = chairs.id
+WHERE chair_locations.created_at = (
+    SELECT MAX(created_at)
+    FROM chair_locations
+    WHERE  chairs.id =  REPLACE(chair_locations.chair_id, '''', '')
+)
+ORDER BY chairs.id, chair_locations.created_at DESC
+) TO './webapp/sql/chairs_new.csv';

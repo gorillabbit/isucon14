@@ -6,6 +6,9 @@ export type Chair = {
   access_token: string;
   created_at: Date;
   updated_at: Date;
+  latitude: number;
+  longitude: number;
+  total_distance: number;
 };
 
 export type ChairModel = {

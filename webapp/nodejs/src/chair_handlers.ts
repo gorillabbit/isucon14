@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import type { RowDataPacket } from "mysql2";
 import { ulid } from "ulid";
-import { getLatestRideStatus, updateLatestRideStatus } from "./common.js";
+import { calculateDistance, getLatestRideStatus, updateLatestRideStatus } from "./common.js";
 import type { Environment } from "./types/hono.js";
 import type {
   ChairLocation,
@@ -69,6 +69,11 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
     await ctx.var.dbConn.query(
       "INSERT INTO chair_locations (id, chair_id, latitude, longitude) VALUES (?, ?, ?, ?)",
       [chairLocationID, chair.id, reqJson.latitude, reqJson.longitude],
+    );
+    const distance = chair.latitude ? calculateDistance(chair.latitude, chair.longitude, reqJson.latitude, reqJson.longitude) : 0;
+    await ctx.var.dbConn.query(
+      "UPDATE chairs (id, latitude, longitude, total_distance) SET  VALUES (?, ?, ?, ?)",
+      [chair.id, reqJson.latitude, reqJson.longitude, distance],
     );
     const [[location]] = await ctx.var.dbConn.query<
       Array<ChairLocation & RowDataPacket>
