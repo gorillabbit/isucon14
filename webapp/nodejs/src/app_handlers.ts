@@ -307,6 +307,10 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
     const rideCount = rides.length;
     if (rideCount === 1) {
+      const [allCoupons] = await ctx.var.dbConn.query<
+        Array<Coupon & RowDataPacket>
+      >("SELECT code FROM coupons WHERE user_id = ? AND used_by IS NULL", [user.id]);
+      console.log("allCoupons", allCoupons);
       // 初回利用で、初回利用クーポンがあれば必ず使う
       const [[coupon]] = await ctx.var.dbConn.query<
         Array<Coupon & RowDataPacket>
