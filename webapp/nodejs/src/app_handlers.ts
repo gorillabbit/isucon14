@@ -286,23 +286,22 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       return ctx.text("ride already exists", 409);
     }
     await ctx.var.dbConn.query(
-      "INSERT INTO rides (id, user_id, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude) VALUES (?, ?, ?, ?, ?, ?)",
+      `INSERT INTO rides (id, user_id, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude) VALUES (?, ?, ?, ?, ?, ?);
+      INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?);
+      `,
       [
-        rideId,
+        rideId, // rides
         user.id,
         reqJson.pickup_coordinate.latitude,
         reqJson.pickup_coordinate.longitude,
         reqJson.destination_coordinate.latitude,
         reqJson.destination_coordinate.longitude,
+        ulid(), // ride_statuses
+        rideId,
+        "MATCHING",
       ],
     );
-    await ctx.var.dbConn.query(
-      "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
-      [ulid(), rideId, "MATCHING"],
-    );
-    const [[{ "COUNT(*)": rideCount }]] = await ctx.var.dbConn.query<
-      Array<CountResult & RowDataPacket>
-    >("SELECT COUNT(*) FROM rides WHERE user_id = ?", [user.id]);
+    const rideCount = rides.length;
     if (rideCount === 1) {
       // 初回利用で、初回利用クーポンがあれば必ず使う
       const [[coupon]] = await ctx.var.dbConn.query<
