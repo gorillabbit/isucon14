@@ -27,7 +27,6 @@ import {
   getLatestRideStatus,
   INITIAL_FARE,
 } from "./common.js";
-import type { CountResult } from "./types/util.js";
 import { requestPaymentGatewayPostPayment } from "./payment_gateway.js";
 import { atoi } from "./utils/integer.js";
 
@@ -407,25 +406,31 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
   await ctx.var.dbConn.beginTransaction();
   try {
     let [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-      "SELECT * FROM rides WHERE id = ?",
+      ` SELECT 
+        r.*
+      FROM 
+        rides r
+      INNER JOIN ride_statuses rs 
+        ON r.id = rs.ride_id
+      WHERE 
+        rs.created_at = (
+          SELECT MAX(rs_inner.created_at)
+          FROM ride_statuses rs_inner
+          WHERE rs_inner.ride_id = r.id
+          AND rs_inner.status = 'ARRIVED'
+        )
+      AND r.id = ?
+      `,
       rideId,
     );
     if (!ride) {
       return ctx.text("ride not found", 404);
     }
-    const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
-    if (status !== "ARRIVED") {
-      return ctx.text("not arrived yet", 400);
-    }
 
-    const [result] = await ctx.var.dbConn.query<ResultSetHeader>(
+    await ctx.var.dbConn.query(
       "UPDATE rides SET evaluation = ? WHERE id = ?",
       [reqJson.evaluation, rideId],
     );
-    if (result.affectedRows === 0) {
-      return ctx.text("ride not found", 404);
-    }
-
     await ctx.var.dbConn.query(
       "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
       [ulid(), rideId, "COMPLETED"],
@@ -441,7 +446,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
 
     const [[paymentToken]] = await ctx.var.dbConn.query<
       Array<PaymentToken & RowDataPacket>
-    >("SELECT * FROM payment_tokens WHERE user_id = ?", [ride.user_id]);
+    >("SELECT token FROM payment_tokens WHERE user_id = ?", [ride.user_id]);
     if (!paymentToken) {
       return ctx.text("payment token not registered", 400);
     }
@@ -454,7 +459,6 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       ride.destination_latitude,
       ride.destination_longitude,
     );
-    const paymentGatewayRequest = { amount: fare };
 
     const [[{ value: paymentGatewayURL }]] = await ctx.var.dbConn.query<
       Array<string & RowDataPacket>
@@ -462,7 +466,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     const err = await requestPaymentGatewayPostPayment(
       paymentGatewayURL,
       paymentToken.token,
-      paymentGatewayRequest,
+      { amount: fare },
       async () => {
         const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
           "SELECT * FROM rides WHERE user_id = ? ORDER BY created_at ASC",
