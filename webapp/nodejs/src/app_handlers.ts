@@ -247,7 +247,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
   try {
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       `
-      SELECT r.*,
+      SELECT r.*
       FROM rides r
       WHERE r.user_id = ?`,
       [user.id],
