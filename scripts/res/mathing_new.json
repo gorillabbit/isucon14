@@ -1,0 +1,27 @@
+{
+  "data": {
+    "ride_id": "01JGJRBADPVBPD6J923R9J6EFH",
+    "pickup_coordinate": {
+      "latitude": 0,
+      "longitude": 0
+    },
+    "destination_coordinate": {
+      "latitude": 20,
+      "longitude": 1
+    },
+    "fare": 500,
+    "status": "MATCHING",
+    "created_at": 1735796304311,
+    "updated_at": 1735796304861,
+    "chair": {
+      "id": "01JGJP73P6TYZ6GRFAAAXJC41J",
+      "name": "AS-LT02-5517",
+      "model": "エアシェル ライト",
+      "stats": {
+        "total_rides_count": 0,
+        "total_evaluation_avg": 0
+      }
+    }
+  },
+  "retry_after_ms": 300
+}

@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "statusText": "",
+  "headers": { "content-type": "application/json; charset=UTF-8" },
+  "body": { "locked": false, "state": "readable", "supportsBYOB": true },
+  "bodyUsed": false,
+  "ok": true,
+  "redirected": false,
+  "type": "default",
+  "url": ""
+}

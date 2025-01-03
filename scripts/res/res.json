@@ -1,0 +1,34 @@
+{
+  "rides": [
+    {
+      "id": "01JDMKSVE8D1ZV83BSHFWTWX0Y",
+      "pickup_coordinate": { "latitude": 25, "longitude": -27 },
+      "destination_coordinate": { "latitude": 9, "longitude": -27 },
+      "fare": 2100,
+      "evaluation": 4,
+      "requested_at": 1732637421000,
+      "completed_at": 1732637421000,
+      "chair": {
+        "id": "01JDGQ21581T2B4FA4MRNHS3Y2",
+        "name": "TL-35-2727",
+        "model": "Titanium Line",
+        "owner": "匠椅子製作所"
+      }
+    },
+    {
+      "id": "01JDMN3Z38WVNT1PP4WZ4AMXWN",
+      "pickup_coordinate": { "latitude": -40, "longitude": -26 },
+      "destination_coordinate": { "latitude": -29, "longitude": -17 },
+      "fare": 2500,
+      "evaluation": 4,
+      "requested_at": 1732638801000,
+      "completed_at": 1732638801000,
+      "chair": {
+        "id": "01JDFMKWKGZ0AHDHVS375ESFA2",
+        "name": "BS-PL04-1760",
+        "model": "ベーシックスツール プラス",
+        "owner": "NextStep Cab"
+      }
+    }
+  ]
+}
