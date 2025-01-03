@@ -483,6 +483,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     );
   } catch (err) {
     await ctx.var.dbConn.rollback();
+    console.error(err);
     return ctx.text(`${err}`, 500);
   }
 };
