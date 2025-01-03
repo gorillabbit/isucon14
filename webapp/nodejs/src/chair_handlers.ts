@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import type { RowDataPacket } from "mysql2";
 import { ulid } from "ulid";
-import { getLatestRideStatus } from "./common.js";
+import { getLatestRideStatus, updateLatestRideStatus } from "./common.js";
 import type { Environment } from "./types/hono.js";
 import type {
   ChairLocation,
@@ -114,6 +114,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
           "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
           [ulid(), ride.id, new_status],
         );
+        await updateLatestRideStatus(ctx, new_status, ride.id);
       }
     }
     await ctx.var.dbConn.commit();
@@ -140,7 +141,7 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
     const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
       Array<RideStatus & RowDataPacket>
     >(
-      "SELECT * FROM ride_statuses WHERE ride_id = ? AND chair_sent_at IS NULL ORDER BY created_at ASC LIMIT 1",
+      "SELECT * FROM ride_statuses WHERE ride_id = ? AND chair_sent_at IS NULL ORDER BY created_at LIMIT 1",
       [ride.id],
     );
     const status = yetSentRideStatus
@@ -211,6 +212,7 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
           "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
           [ulid(), ride.id, "ENROUTE"],
         );
+        await updateLatestRideStatus(ctx, "ENROUTE", ride.id);
         break;
       // After Picking up user
       case "CARRYING": {
@@ -222,6 +224,7 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
           "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
           [ulid(), ride.id, "CARRYING"],
         );
+        await updateLatestRideStatus(ctx, "CARRYING", ride.id);
         break;
       }
       default:

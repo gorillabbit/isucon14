@@ -1,5 +1,7 @@
 import type { Connection, RowDataPacket } from "mysql2/promise";
 import type { Ride, RideStatus } from "./types/models.js";
+import type { Context } from "hono";
+import type { Environment } from "./types/hono.js";
 
 export const INITIAL_FARE = 500;
 export const FARE_PER_DISTANCE = 100;
@@ -58,4 +60,11 @@ export class ErroredUpstream extends Error {
     super(message);
     this.name = "ErroredUpstream";
   }
+}
+
+export const updateLatestRideStatus = async (ctx: Context<Environment>, new_status: string, rideId: string) => {
+  await ctx.var.dbConn.query(
+    "UPDATE rides SET latest_status = ? WHERE id = ?",
+    [new_status, rideId],
+  );
 }

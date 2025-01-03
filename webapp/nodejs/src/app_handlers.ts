@@ -24,6 +24,7 @@ import {
   FARE_PER_DISTANCE,
   getLatestRideStatus,
   INITIAL_FARE,
+  updateLatestRideStatus,
 } from "./common.js";
 import { requestPaymentGatewayPostPayment } from "./payment_gateway.js";
 import { atoi } from "./utils/integer.js";
@@ -294,12 +295,9 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
     await ctx.var.dbConn.query(
       `INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)`,
-      [
-        ulid(),
-        rideId,
-        "MATCHING",
-      ],
+      [ulid(), rideId, "MATCHING",],
     );
+    await updateLatestRideStatus(ctx, "MATCHING", rideId);
     const rideCount = rides.length;
     const [allCoupons] = await ctx.var.dbConn.query<
       Array<Coupon & RowDataPacket>
@@ -433,6 +431,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       "INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)",
       [ulid(), rideId, "COMPLETED"],
     );
+    await updateLatestRideStatus(ctx, "COMPLETED", rideId);
 
     [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       "SELECT * FROM rides WHERE id = ?",
