@@ -67,6 +67,8 @@ export const ownerGetSales = async (ctx: Context<Environment>) => {
       sales,
     }));
 
+    console.log("totalSales", totalSales, chairSales, models);
+
     return ctx.json({
       total_sales: totalSales,
       chairs: chairSales,
