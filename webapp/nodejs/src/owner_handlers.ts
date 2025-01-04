@@ -147,7 +147,7 @@ WHERE owner_id = ?`,
     return c;
   });
 
-  return ctx.json({ chairs: chairResponse });
+  return ctx.json({ chairs: chairResponse, a: "a" });
 };
 
 function sumSales(rides: Ride[]) {
