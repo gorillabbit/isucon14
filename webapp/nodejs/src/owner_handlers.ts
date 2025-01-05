@@ -128,7 +128,7 @@ export const ownerGetChairs = async (ctx: Context<Environment>) => {
       LEFT JOIN (
         SELECT 
           chair_id,
-          MAX(created_at)          AS total_distance_updated_at
+          MAX(created_at) AS total_distance_updated_at
         FROM (
           SELECT 
             chair_id,
