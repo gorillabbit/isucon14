@@ -146,8 +146,16 @@ WHERE owner_id = ?`,
     }
     return c;
   });
+  chairResponse.push({
+    id: "dummy",
+    name: "dummy",
+    model: "dummy",
+    active: false,
+    registered_at: 0,
+    total_distance: 0,
+  });
 
-  return ctx.json({ chairs: chairResponse, a: "a" });
+  return ctx.json({ chairs: chairResponse });
 };
 
 function sumSales(rides: Ride[]) {
