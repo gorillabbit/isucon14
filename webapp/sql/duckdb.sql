@@ -44,8 +44,6 @@ CalculatedSums AS (
         SUM(ABS(latitude - prev_latitude) + ABS(longitude - prev_longitude)) AS total_diff
     FROM
         DiffCalculation
-    WHERE
-        prev_latitude IS NOT NULL -- 最初の行には差分がないため除外
     GROUP BY
         chair_id
 )
@@ -63,41 +61,29 @@ SELECT
     chairs.created_at,
     chairs.updated_at,
     chair_locations.latitude,
-    chair_locations.longitude
+    chair_locations.longitude,
+    chairs_total.total_diff
 FROM (
     SELECT * 
-    FROM read_csv_auto('./webapp/sql/chair_locations.csv')
-    ) as chair_locations
-JOIN (
-    SELECT * 
     FROM read_csv_auto('./webapp/sql/chairs.csv')
-    ) as chairs 
+) as chairs
+LEFT JOIN (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chair_locations.csv')
+) as chair_locations
 ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
-JOIN (
+AND chair_locations.created_at = (
+    SELECT MAX(created_at)
+    FROM (
+        SELECT * 
+        FROM read_csv_auto('./webapp/sql/chair_locations.csv')
+    ) as inner_locations
+    WHERE REPLACE(inner_locations.chair_id, '''', '') = chairs.id
+)
+LEFT JOIN (
     SELECT * 
     FROM read_csv_auto('./webapp/sql/chairs_total.csv')
-    ) as chairs_total 
+) as chairs_total 
 ON chairs.id = REPLACE(chairs_total.chair_id, '''', '')
-WHERE chair_locations.created_at = (
-    SELECT MAX(created_at)
-    FROM chair_locations
-    WHERE chairs_total.chair_id = chair_locations.chair_id
-)
 ORDER BY chairs.id, chair_locations.created_at DESC
 ) TO './webapp/sql/chairs_new.csv';
-
-SELECT *
-FROM (
-    SELECT * 
-    FROM read_csv_auto('./webapp/sql/chair_locations.csv')
-    ) as chair_locations
-JOIN (
-    SELECT * 
-    FROM read_csv_auto('./webapp/sql/chairs.csv')
-    ) as chairs 
-ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
-WHERE chair_locations.created_at = (
-    SELECT MAX(created_at)
-    FROM chair_locations
-    WHERE chairs.id = REPLACE(chair_locations.chair_id, '''', '')
-);

@@ -230,7 +230,7 @@
     {
       "id": "01JDG5WRZR2MF03HADBRTM7121",
       "name": "AS-LT02-1592",
-      "model": "エアシェル ライト",
+      "model": " エアシェル ライト",
       "active": false,
       "registered_at": 1732488619000,
       "total_distance": 0
@@ -265,7 +265,7 @@
     {
       "id": "01JDGB69SGGMFR9GQQEEN4RXKS",
       "name": "FS-V41-685",
-      "model": "フューチャーステップ VISION",
+      "model": "フューチャ ーステップ VISION",
       "active": false,
       "registered_at": 1732494174000,
       "total_distance": 67,
@@ -501,7 +501,7 @@
     {
       "id": "01JDGTWD5R0A85VK3Q8M5VAR1G",
       "name": "VC-S50-6767",
-      "model": "ヴァーチェア SUPREME",
+      "model": " ヴァーチェア SUPREME",
       "active": false,
       "registered_at": 1732510627000,
       "total_distance": 308,
@@ -510,7 +510,7 @@
     {
       "id": "01JDGV2DJ0RK6ET6SBBHZ8SWS5",
       "name": "NS-BE44-4473",
-      "model": "ナイトシート ブラックエディション",
+      "model": "ナイト シート ブラックエディション",
       "active": false,
       "registered_at": 1732510824000,
       "total_distance": 57,
@@ -878,7 +878,14 @@
       "registered_at": 1732546634000,
       "total_distance": 110,
       "total_distance_updated_at": 1732587492000
+    },
+    {
+      "id": "dummy",
+      "name": "dummy",
+      "model": "dummy",
+      "active": false,
+      "registered_at": 0,
+      "total_distance": 0
     }
-  ],
-  "a": "a"
+  ]
 }
