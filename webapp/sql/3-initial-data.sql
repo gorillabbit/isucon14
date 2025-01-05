@@ -21,10 +21,6 @@
 
 USE `isuride`;
 
---
--- Dumping data for table `chair_locations`
---
-
 LOCK TABLES `chair_locations` WRITE;
 /*!40000 ALTER TABLE `chair_locations` DISABLE KEYS */;
 LOAD DATA LOCAL INFILE '~/webapp/sql/chair_locations.csv'
@@ -34,10 +30,6 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 /*!40000 ALTER TABLE `chair_locations` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping data for table `chairs`
---
 
 LOCK TABLES `chairs` WRITE;
 /*!40000 ALTER TABLE `chairs` DISABLE KEYS */;
