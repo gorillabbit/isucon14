@@ -70,7 +70,8 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       "INSERT INTO chair_locations (id, chair_id, latitude, longitude) VALUES (?, ?, ?, ?)",
       [chairLocationID, chair.id, reqJson.latitude, reqJson.longitude],
     );
-    const distance = chair.latitude ? calculateDistance(chair.latitude, chair.longitude, reqJson.latitude, reqJson.longitude) : 0;
+    const distance = chair.latitude ? chair.total_distance + calculateDistance(chair.latitude, chair.longitude, reqJson.latitude, reqJson.longitude) : 0;
+    console.log(`distance: ${distance}`);
     await ctx.var.dbConn.query(
       `
       UPDATE chairs
