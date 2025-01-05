@@ -26,12 +26,6 @@ FROM LatestStatus
 ) TO './webapp/sql/rides_new.csv'
 ;
 
-CREATE TABLE chairs AS
-    SELECT * FROM read_csv('./webapp/sql/chairs.csv');
-CREATE TABLE chair_locations AS
-    SELECT * FROM read_csv('./webapp/sql/chair_locations.csv');
-CREATE TABLE chairs_total AS
-    SELECT * FROM read_csv('./webapp/sql/chairs_total.csv');
 
 COPY (
 WITH DiffCalculation AS (
@@ -70,13 +64,40 @@ SELECT
     chairs.updated_at,
     chair_locations.latitude,
     chair_locations.longitude
-FROM chair_locations
-JOIN chairs ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
-JOIN chairs_total ON chairs_total.chair_id = chairs.id
+FROM (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chair_locations.csv')
+    ) as chair_locations
+JOIN (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chairs.csv')
+    ) as chairs 
+ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
+JOIN (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chairs_total.csv')
+    ) as chairs_total 
+ON chairs.id = REPLACE(chairs_total.chair_id, '''', '')
 WHERE chair_locations.created_at = (
     SELECT MAX(created_at)
     FROM chair_locations
-    WHERE  chairs.id =  REPLACE(chair_locations.chair_id, '''', '')
+    WHERE chairs_total.chair_id = chair_locations.chair_id
 )
 ORDER BY chairs.id, chair_locations.created_at DESC
 ) TO './webapp/sql/chairs_new.csv';
+
+SELECT *
+FROM (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chair_locations.csv')
+    ) as chair_locations
+JOIN (
+    SELECT * 
+    FROM read_csv_auto('./webapp/sql/chairs.csv')
+    ) as chairs 
+ON chairs.id = REPLACE(chair_locations.chair_id, '''', '')
+WHERE chair_locations.created_at = (
+    SELECT MAX(created_at)
+    FROM chair_locations
+    WHERE chairs.id = REPLACE(chair_locations.chair_id, '''', '')
+);
