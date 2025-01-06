@@ -71,7 +71,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       [chairLocationID, chair.id, reqJson.latitude, reqJson.longitude],
     );
     // chair.latitude がnullのとき同計算するか
-    const distance = chair.latitude === null ? chair.total_distance + calculateDistance(chair.latitude, chair.longitude, reqJson.latitude, reqJson.longitude) : chair.total_distance;
+    const distance = chair.latitude !== null ? chair.total_distance + calculateDistance(chair.latitude, chair.longitude, reqJson.latitude, reqJson.longitude) : chair.total_distance;
     console.log(
       `id: ${chair.id} distance: ${distance}`,
       chair.latitude,
