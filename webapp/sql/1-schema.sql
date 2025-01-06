@@ -35,6 +35,7 @@ CREATE TABLE chairs
   latitude   INTEGER     NULL COMMENT '経度',
   longitude  INTEGER     NULL COMMENT '緯度',
   total_distance INTEGER default 0 COMMENT '総移動距離',
+  current_ride_id VARCHAR(26) NULL COMMENT '現在のライドID',
   PRIMARY KEY (id)
 )
   COMMENT = '椅子情報テーブル';
