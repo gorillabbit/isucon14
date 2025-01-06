@@ -1,5 +1,4 @@
-import type { Connection, RowDataPacket } from "mysql2/promise";
-import type { Ride, RideStatus } from "./types/models.js";
+import type { Ride } from "./types/models.js";
 import type { Context } from "hono";
 import type { Environment } from "./types/hono.js";
 import { ulid } from "ulid";
