@@ -17,7 +17,7 @@ export const requestPaymentGatewayPostPayment = async (
   let retry = 0;
   while (true) {
     try {
-      const res = await fetch(`${paymentGatewayURL}/payments`, {
+      const res = await fetch(`http://localhost:12345/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +28,7 @@ export const requestPaymentGatewayPostPayment = async (
 
       if (res.status !== 204) {
         // エラーが返ってきても成功している場合があるので、社内決済マイクロサービスに問い合わせ
-        const getRes = await fetch(`${paymentGatewayURL}/payments`, {
+        const getRes = await fetch(`http://localhost:12345/payments`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
