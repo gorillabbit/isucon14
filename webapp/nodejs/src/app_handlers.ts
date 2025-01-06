@@ -655,7 +655,7 @@ export const appGetNearbyChairs = async (ctx: Context<Environment>) => {
   await ctx.var.dbConn.beginTransaction();
   try {
     const [chairs] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
-      "SELECT * FROM chairs",
+      "SELECT * FROM chairs WHERE is_active = 1",
     );
     const nearbyChairs: Array<{
       id: string;
@@ -664,24 +664,12 @@ export const appGetNearbyChairs = async (ctx: Context<Environment>) => {
       current_coordinate: Coordinate;
     }> = [];
     for (const chair of chairs) {
-      if (!chair.is_active) continue;
+      if (!chair.latitude || !chair.longitude) continue;
       const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-        "SELECT * FROM rides WHERE chair_id = ? ORDER BY created_at DESC",
+        "SELECT * FROM rides WHERE chair_id = ? AND latest_status != 'COMPLETED' ORDER BY created_at DESC",
         [chair.id],
       );
-      let skip = false;
-      for (const ride of rides) {
-        // 過去にライドが存在し、かつ、それが完了していない場合はスキップ
-        if (ride.latest_status !== "COMPLETED") {
-          skip = true;
-          break;
-        }
-      }
-      if (skip) {
-        continue;
-      }
-
-      if (!chair.latitude || !chair.longitude) {
+      if (rides.length !== 0) {
         continue;
       }
 
