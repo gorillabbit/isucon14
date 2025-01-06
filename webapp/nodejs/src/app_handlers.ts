@@ -22,7 +22,6 @@ import {
   calculateFare,
   ErroredUpstream,
   FARE_PER_DISTANCE,
-  getLatestRideStatus,
   INITIAL_FARE,
   updateLatestRideStatus,
 } from "./common.js";
@@ -513,7 +512,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
     );
     const status = yetSentRideStatus
       ? yetSentRideStatus.status
-      : await getLatestRideStatus(ctx.var.dbConn, ride.id);
+      : ride.latest_status;
 
     const fare = await calculateDiscountedFare(
       ctx.var.dbConn,
@@ -673,8 +672,7 @@ export const appGetNearbyChairs = async (ctx: Context<Environment>) => {
       let skip = false;
       for (const ride of rides) {
         // 過去にライドが存在し、かつ、それが完了していない場合はスキップ
-        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
-        if (status !== "COMPLETED") {
+        if (ride.latest_status !== "COMPLETED") {
           skip = true;
           break;
         }

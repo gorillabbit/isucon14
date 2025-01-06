@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import type { RowDataPacket } from "mysql2";
 import { ulid } from "ulid";
-import { calculateDistance, getLatestRideStatus, updateLatestRideStatus } from "./common.js";
+import { calculateDistance, updateLatestRideStatus } from "./common.js";
 import type { Environment } from "./types/hono.js";
 import type {
   ChairLocation,

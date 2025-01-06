@@ -43,19 +43,6 @@ export const calculateSale = (ride: Ride): number => {
   );
 };
 
-export const getLatestRideStatus = async (
-  dbConn: Connection,
-  rideId: string,
-): Promise<string> => {
-  const [[{ status }]] = await dbConn.query<
-    Array<Pick<RideStatus, "status"> & RowDataPacket>
-  >(
-    "SELECT status FROM ride_statuses WHERE ride_id = ? ORDER BY created_at DESC LIMIT 1",
-    [rideId],
-  );
-  return status;
-};
-
 export class ErroredUpstream extends Error {
   constructor(message: string) {
     super(message);
