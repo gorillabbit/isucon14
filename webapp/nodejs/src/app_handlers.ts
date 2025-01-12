@@ -376,7 +376,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
   }
   await ctx.var.dbConn.beginTransaction();
   try {
-    const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
+    let [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       ` SELECT 
         r.*
       FROM 
@@ -405,6 +405,15 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     );
     await updateLatestRideStatus(ctx, "COMPLETED", rideId);
 
+    // 更新されたupdate_atを取得するために再取得
+    [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
+      "SELECT * FROM rides WHERE id = ?",
+      rideId,
+    );
+    if (!ride) {
+      return ctx.text("ride not found", 404);
+    }
+
     console.log("after : ", ride)
 
     const [[paymentToken]] = await ctx.var.dbConn.query<
@@ -426,6 +435,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     const [[{ value: paymentGatewayURL }]] = await ctx.var.dbConn.query<
       Array<string & RowDataPacket>
     >("SELECT value FROM settings WHERE name = 'payment_gateway_url'");
+    console.log("paymentGatewayURL : ", paymentGatewayURL)
     const err = await requestPaymentGatewayPostPayment(
       paymentGatewayURL,
       paymentToken.token,
