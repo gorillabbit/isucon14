@@ -120,6 +120,9 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
     ctx.var.dbConn.rollback();
     return ctx.text(`${e}`, 500);
   }
+
+
+
 };
 
 export const chairGetNotification = async (ctx: Context<Environment>) => {

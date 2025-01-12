@@ -6,4 +6,6 @@ CREATE DATABASE IF NOT EXISTS isuride DEFAULT CHARACTER SET utf8mb4 COLLATE utf8
 DROP USER IF EXISTS 'isucon'@'%';
 CREATE USER IF NOT EXISTS 'isucon'@'%' IDENTIFIED BY 'isucon';
 GRANT ALL ON isuride.* TO 'isucon'@'%';
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'password';
+GRANT ALL ON isuride.* TO 'root'@'%';
 SET GLOBAL local_infile = 1;
