@@ -72,20 +72,40 @@ AND NOT EXISTS (
         }
       }
       if (fastest_chiar.id) {
-        await ctx.var.dbConn.query(
-          "UPDATE rides SET chair_id = ? WHERE id = ?",
-          [fastest_chiar.id, ride.id],
-        );
-        used_chairs.push(fastest_chiar.id);
-        i++;
-      } else {
-        break;
+        console.log(`##### matched ride ${ride.id} with chair ${fastest_chiar.id} #####`);
+        // 本当に早いかわからないので、適当にログを出す
+        for (const match of matched) {
+          console.log(
+            `chair ${match.id} is at (${match.latitude}, ${match.longitude}) and speed is ${match.speed}
+            distance to pickup: ${calculateDistance(
+              match.latitude,
+              match.longitude,
+              ride.pickup_latitude,
+              ride.pickup_longitude,
+            )} and distance to dest: ${calculateDistance(
+              ride.destination_latitude,
+              ride.destination_longitude,
+              ride.pickup_latitude,
+              ride.pickup_longitude,
+            )}`,
+          );
+        }
       }
+
+      await ctx.var.dbConn.query(
+        "UPDATE rides SET chair_id = ? WHERE id = ?",
+        [fastest_chiar.id, ride.id],
+      );
+      used_chairs.push(fastest_chiar.id);
+      i++;
+    } else {
+      break;
     }
-    console.log(`##### matched ${i} rides #####`);
-    return ctx.body(null, 204);
-  } catch (error) {
-    console.log(error);
-    return ctx.text(`Internal Server Error\n${error}`, 500);
   }
+    console.log(`##### matched ${i} rides #####`);
+  return ctx.body(null, 204);
+} catch (error) {
+  console.log(error);
+  return ctx.text(`Internal Server Error\n${error}`, 500);
+}
 };
