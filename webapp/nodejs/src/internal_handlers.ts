@@ -90,22 +90,22 @@ AND NOT EXISTS (
             )}`,
           );
         }
-      }
 
-      await ctx.var.dbConn.query(
-        "UPDATE rides SET chair_id = ? WHERE id = ?",
-        [fastest_chiar.id, ride.id],
-      );
-      used_chairs.push(fastest_chiar.id);
-      i++;
-    } else {
-      break;
+
+        await ctx.var.dbConn.query(
+          "UPDATE rides SET chair_id = ? WHERE id = ?",
+          [fastest_chiar.id, ride.id],
+        );
+        used_chairs.push(fastest_chiar.id);
+        i++;
+      } else {
+        break;
+      }
     }
-  }
     console.log(`##### matched ${i} rides #####`);
-  return ctx.body(null, 204);
-} catch (error) {
-  console.log(error);
-  return ctx.text(`Internal Server Error\n${error}`, 500);
-}
+    return ctx.body(null, 204);
+  } catch (error) {
+    console.log(error);
+    return ctx.text(`Internal Server Error\n${error}`, 500);
+  }
 };
