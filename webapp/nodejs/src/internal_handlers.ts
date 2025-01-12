@@ -67,6 +67,7 @@ AND NOT EXISTS (
           ride.pickup_longitude,
         );
         const time = (distant_1 + distant_2) / match.speed;
+        console.log(`# ${match.id} ${distant_1} ${distant_2} ${match.speed} ${time}`);
         if (fastest_chiar.time > time) {
           (fastest_chiar.id = match.id), (fastest_chiar.time = time);
         }
@@ -74,23 +75,6 @@ AND NOT EXISTS (
       if (fastest_chiar.id) {
         console.log(`##### matched ride ${ride.id} with chair ${fastest_chiar.id} #####`);
         // 本当に早いかわからないので、適当にログを出す
-        for (const match of matched) {
-          console.log(
-            `chair ${match.id} is at (${match.latitude}, ${match.longitude}) and speed is ${match.speed}
-            distance to pickup: ${calculateDistance(
-              match.latitude,
-              match.longitude,
-              ride.pickup_latitude,
-              ride.pickup_longitude,
-            )} and distance to dest: ${calculateDistance(
-              ride.destination_latitude,
-              ride.destination_longitude,
-              ride.pickup_latitude,
-              ride.pickup_longitude,
-            )}`,
-          );
-        }
-
 
         await ctx.var.dbConn.query(
           "UPDATE rides SET chair_id = ? WHERE id = ?",
