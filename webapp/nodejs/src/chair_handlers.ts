@@ -84,7 +84,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
     );
     const [[location]] = await ctx.var.dbConn.query<
       Array<ChairLocation & RowDataPacket>
-    >("SELECT * FROM chair_locations WHERE id = ?", [chairLocationID]);
+    >("SELECT created_at FROM chair_locations WHERE id = ?", [chairLocationID]);
     const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       `
       SELECT r.*
@@ -114,10 +114,10 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
         await updateLatestRideStatus(ctx, new_status, ride.id);
       }
     }
-    await ctx.var.dbConn.commit();
+    ctx.var.dbConn.commit();
     return ctx.json({ recorded_at: location.created_at.getTime() }, 200);
   } catch (e) {
-    await ctx.var.dbConn.rollback();
+    ctx.var.dbConn.rollback();
     return ctx.text(`${e}`, 500);
   }
 };
