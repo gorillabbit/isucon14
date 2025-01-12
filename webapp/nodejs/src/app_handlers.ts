@@ -431,8 +431,12 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       ride.destination_latitude,
       ride.destination_longitude,
     );
+
+    const [[{ value: paymentGatewayURL }]] = await ctx.var.dbConn.query<
+      Array<string & RowDataPacket>
+    >("SELECT value FROM settings WHERE name = 'payment_gateway_url'");
     const err = await requestPaymentGatewayPostPayment(
-      "http://13.231.194.4:12345",
+      paymentGatewayURL,
       paymentToken.token,
       { amount: fare },
       async () => {
