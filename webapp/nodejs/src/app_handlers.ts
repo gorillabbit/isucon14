@@ -394,6 +394,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       `,
       rideId,
     );
+    console.log("ride : ", ride)
     if (!ride) {
       return ctx.text("ride not found", 404);
     }
@@ -403,8 +404,6 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       [reqJson.evaluation, rideId],
     );
     await updateLatestRideStatus(ctx, "COMPLETED", rideId);
-
-    console.log("before : ", ride)
 
     [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       "SELECT * FROM rides WHERE id = ?",
