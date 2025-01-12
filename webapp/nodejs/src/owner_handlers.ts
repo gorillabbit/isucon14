@@ -149,8 +149,8 @@ export const ownerGetChairs = async (ctx: Context<Environment>) => {
       registered_at: chair.created_at.getTime(),
       total_distance: Number(chair.total_distance),
     };
-    if (chair.total_distance_updated_at) {
-      c.total_distance_updated_at = chair.total_distance_updated_at.getTime();
+    if (chair.updated_at) {
+      c.total_distance_updated_at = chair.updated_at.getTime();
     }
     return c;
   });
