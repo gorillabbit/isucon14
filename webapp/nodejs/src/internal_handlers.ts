@@ -27,9 +27,7 @@ WITH latest_locations AS (
 incomplete_rides AS (
     SELECT DISTINCT r.chair_id
     FROM rides r
-    JOIN ride_statuses rs ON r.id = rs.ride_id
-    GROUP BY r.chair_id, r.id
-    HAVING COUNT(rs.chair_sent_at) < 6
+    WHERE r.latest_status IS NOT 'COMPLETED'
 )
 SELECT c.id, cm.speed, ll.latitude, ll.longitude
 FROM chairs c
