@@ -15,26 +15,16 @@ export const internalGetMatching = async (ctx: Context<Environment>) => {
     }
     const [matched] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
       `
-WITH latest_locations AS (
-    SELECT chair_id, latitude, longitude
-    FROM chair_locations
-    WHERE (chair_id, created_at) IN (
-        SELECT chair_id, MAX(created_at)
-        FROM chair_locations
-        GROUP BY chair_id
-    )
-),
-incomplete_rides AS (
+WITH incomplete_rides AS (
     SELECT DISTINCT r.chair_id
     FROM rides r
     JOIN ride_statuses rs ON r.id = rs.ride_id
     GROUP BY r.chair_id, r.id
     HAVING COUNT(rs.chair_sent_at) < 6
 )
-SELECT c.id, cm.speed, ll.latitude, ll.longitude
+SELECT c.id, cm.speed, c.latitude, c.longitude
 FROM chairs c
 INNER JOIN chair_models cm ON c.model = cm.name
-LEFT JOIN latest_locations ll ON ll.chair_id = c.id
 WHERE c.is_active = TRUE
 AND NOT EXISTS (
     SELECT 1

@@ -394,7 +394,6 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       `,
       rideId,
     );
-    console.log("ride : ", ride)
     if (!ride) {
       return ctx.text("ride not found", 404);
     }
@@ -413,8 +412,6 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     if (!ride) {
       return ctx.text("ride not found", 404);
     }
-
-    console.log("after : ", ride)
 
     const [[paymentToken]] = await ctx.var.dbConn.query<
       Array<PaymentToken & RowDataPacket>
