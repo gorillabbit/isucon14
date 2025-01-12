@@ -28,6 +28,7 @@ incomplete_rides AS (
     SELECT DISTINCT r.chair_id
     FROM rides r
     WHERE r.latest_status != 'COMPLETED'
+    GROUP BY r.chair_id, r.id
 )
 SELECT c.id, cm.speed, ll.latitude, ll.longitude
 FROM chairs c
