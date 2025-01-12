@@ -27,7 +27,7 @@ WITH latest_locations AS (
 incomplete_rides AS (
     SELECT DISTINCT r.chair_id
     FROM rides r
-    WHERE r.latest_status IS NOT 'COMPLETED'
+    WHERE r.latest_status != 'COMPLETED'
 )
 SELECT c.id, cm.speed, ll.latitude, ll.longitude
 FROM chairs c
